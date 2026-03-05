@@ -57,8 +57,8 @@ export function Lancamentos() {
     setError("");
     try {
       const params = {};
-      if (filtroInicio) params.data_inicio = filtroInicio;
-      if (filtroFim) params.data_fim = filtroFim;
+      if (filtroInicio) params.inicio = filtroInicio;
+      if (filtroFim) params.fim = filtroFim;
       const resp = await api.getLancamentos(token, params);
       const list = Array.isArray(resp) ? resp : resp?.lancamentos ?? [];
       setLancamentos(list);
@@ -99,6 +99,12 @@ export function Lancamentos() {
     { entradas: 0, saidas: 0, reservas: 0 }
   );
   resumo.saldo = resumo.entradas - resumo.saidas - resumo.reservas;
+
+  /* ------------- LOOKUP MAPS ------------- */
+  const contaMap = Object.fromEntries(contas.map((c) => [String(c.id), c.nome]));
+  const categoriaMap = Object.fromEntries(categorias.map((c) => [String(c.id), c.nome]));
+  const getNomeConta = (l) => l.conta?.nome || contaMap[String(l.conta_id)] || "—";
+  const getNomeCategoria = (l) => l.categoria?.nome || categoriaMap[String(l.categoria_id)] || "—";
 
   /* ------------- FORM HANDLERS ------------- */
   const resetForm = () => {
@@ -269,6 +275,26 @@ export function Lancamentos() {
           <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem', fontWeight: '600', color: '#2d3748' }}>
             {editingId ? '✏️ Editar Lançamento' : '💰 Novo Lançamento'}
           </h2>
+          {(tipo === 'saida' || tipo === 'reserva') && (
+            <div style={{
+              background: resumo.saldo > 0 ? 'linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%)' : 'linear-gradient(135deg, #ffebee 0%, #fce4ec 100%)',
+              borderRadius: '12px',
+              padding: '0.75rem 1rem',
+              marginBottom: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              border: resumo.saldo > 0 ? '1px solid #c8e6c9' : '1px solid #ffcdd2'
+            }}>
+              <span style={{ fontSize: '1.2rem' }}>{resumo.saldo > 0 ? '💰' : '⚠️'}</span>
+              <div>
+                <div style={{ fontSize: '0.8rem', color: '#4a5568', fontWeight: '600' }}>Saldo disponível para distribuir</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: '700', color: resumo.saldo >= 0 ? '#2e7d32' : '#c62828' }}>
+                  {formatBRL(resumo.saldo)}
+                </div>
+              </div>
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
               <div>
@@ -377,7 +403,7 @@ export function Lancamentos() {
         gap: '1rem',
         marginBottom: '1.5rem'
       }}>
-        <MiniCard label="Saldo" value={formatBRL(resumo.saldo)} color={resumo.saldo >= 0 ? '#11998e' : '#ff6b6b'} icon="💎" />
+        <MiniCard label="Saldo Disponível" value={formatBRL(resumo.saldo)} color={resumo.saldo >= 0 ? '#11998e' : '#ff6b6b'} icon="💎" />
         <MiniCard label="Entradas" value={formatBRL(resumo.entradas)} color="#11998e" icon="📈" />
         <MiniCard label="Saídas" value={formatBRL(resumo.saidas)} color="#ff6b6b" icon="📉" />
         <MiniCard label="Reservas" value={formatBRL(resumo.reservas)} color="#d69e2e" icon="🏦" />
@@ -440,8 +466,8 @@ export function Lancamentos() {
                       <td style={tdStyle}>
                         {l.data_ocorrencia ? new Date(l.data_ocorrencia).toLocaleDateString("pt-BR") : "—"}
                       </td>
-                      <td style={tdStyle}>{l.conta?.nome || "—"}</td>
-                      <td style={tdStyle}>{l.categoria?.nome || "—"}</td>
+                      <td style={tdStyle}>{getNomeConta(l)}</td>
+                      <td style={tdStyle}>{getNomeCategoria(l)}</td>
                       <td style={{ ...tdStyle, textAlign: 'center' }}>
                         {deletingId === l.id ? (
                           <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center', alignItems: 'center' }}>
@@ -491,8 +517,8 @@ export function Lancamentos() {
                       <div style={{ fontWeight: '600', color: '#2d3748' }}>{l.descricao}</div>
                       <div style={{ fontSize: '0.8rem', color: '#a0aec0', marginTop: '0.15rem' }}>
                         {l.data_ocorrencia ? new Date(l.data_ocorrencia).toLocaleDateString("pt-BR") : "—"}
-                        {l.conta?.nome ? ` · ${l.conta.nome}` : ""}
-                        {l.categoria?.nome ? ` · ${l.categoria.nome}` : ""}
+                        {getNomeConta(l) !== "—" ? ` · ${getNomeConta(l)}` : ""}
+                        {getNomeCategoria(l) !== "—" ? ` · ${getNomeCategoria(l)}` : ""}
                       </div>
                     </div>
                     <span style={{
