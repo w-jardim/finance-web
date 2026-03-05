@@ -6,6 +6,7 @@ import { Lancamentos } from './pages/Lancamentos';
 import { Contas } from './pages/Contas';
 import { Categorias } from './pages/Categorias';
 import { Layout } from './components/Layout';
+import { NotFound } from './pages/NotFound';
 
 // Root wrapper that provides AuthContext to all routes
 function RootLayout() {
@@ -52,7 +53,7 @@ export const router = createBrowserRouter([
       },
       {
         path: '*',
-        element: <Navigate to="/login" replace />,
+        element: <NotFound />,
       },
     ],
   },
