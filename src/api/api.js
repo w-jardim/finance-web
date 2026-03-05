@@ -83,9 +83,28 @@ export const api = {
       body: data,
     }),
 
+  updateLancamento: (token, id, data) =>
+    request(`/lancamentos/${id}`, {
+      method: "PUT",
+      token,
+      body: data,
+    }),
+
+  deleteLancamento: (token, id) =>
+    request(`/lancamentos/${id}`, {
+      method: "DELETE",
+      token,
+    }),
+
   getContas: (token) => request("/contas", { method: "GET", token }),
   createConta: (token, nome) =>
     request("/contas", { method: "POST", token, body: { nome } }),
+
+  updateConta: (token, id, nome) =>
+    request(`/contas/${id}`, { method: "PUT", token, body: { nome } }),
+
+  deleteConta: (token, id) =>
+    request(`/contas/${id}`, { method: "DELETE", token }),
 
   getCategorias: (token, { tipo } = {}) => {
     const qs = new URLSearchParams();
@@ -96,4 +115,10 @@ export const api = {
 
   createCategoria: (token, { nome, tipo }) =>
     request("/categorias", { method: "POST", token, body: { nome, tipo } }),
+
+  updateCategoria: (token, id, { nome, tipo }) =>
+    request(`/categorias/${id}`, { method: "PUT", token, body: { nome, tipo } }),
+
+  deleteCategoria: (token, id) =>
+    request(`/categorias/${id}`, { method: "DELETE", token }),
 };
