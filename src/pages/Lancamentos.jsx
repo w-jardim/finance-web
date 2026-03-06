@@ -38,6 +38,8 @@ export function Lancamentos() {
   const [dataOcorrencia, setDataOcorrencia] = useState(today());
   const [contaId, setContaId] = useState("");
   const [categoriaId, setCategoriaId] = useState("");
+  const [origemLancamentoId, setOrigemLancamentoId] = useState("");
+  const [entradasList, setEntradasList] = useState([]);
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
@@ -86,9 +88,30 @@ export function Lancamentos() {
     }
   }, [token, logout]);
 
+  const fetchEntradas = useCallback(async () => {
+    try {
+      const resp = await api.getLancamentos(token, { tipo: 'entrada' });
+      const list = Array.isArray(resp) ? resp : resp?.lancamentos ?? [];
+      return list;
+    } catch {
+      return [];
+    }
+  }, [token]);
+
   useEffect(() => {
     if (token) { fetchLancamentos(); fetchAux(); }
   }, [token, fetchLancamentos, fetchAux]);
+
+  useEffect(() => {
+    if (!showForm) return;
+    if (tipo !== 'reserva') return;
+    let mounted = true;
+    (async () => {
+      const list = await fetchEntradas();
+      if (mounted) setEntradasList(list);
+    })();
+    return () => { mounted = false; };
+  }, [showForm, tipo, fetchEntradas]);
 
   /* ------------- SUMMARIES ------------- */
   const resumo = lancamentos.reduce(
@@ -120,6 +143,8 @@ export function Lancamentos() {
     setEditingId(null);
     setFormError("");
     setFormSuccess("");
+    setOrigemLancamentoId("");
+    setEntradasList([]);
   };
 
   const openCreate = () => {
@@ -134,6 +159,7 @@ export function Lancamentos() {
     setDataOcorrencia(l.data_ocorrencia ? l.data_ocorrencia.slice(0, 10) : today());
     setContaId(l.conta_id || l.contaId || "");
     setCategoriaId(l.categoria_id || l.categoriaId || "");
+    setOrigemLancamentoId(l.origem_lancamento_id || "");
     setEditingId(l.id);
     setFormError("");
     setFormSuccess("");
@@ -167,6 +193,7 @@ export function Lancamentos() {
     };
     if (contaId) body.conta_id = Number(contaId);
     if (categoriaId) body.categoria_id = Number(categoriaId);
+    if (origemLancamentoId) body.origem_lancamento_id = Number(origemLancamentoId);
 
     try {
       if (editingId) {
@@ -341,6 +368,17 @@ export function Lancamentos() {
                   ))}
                 </select>
               </div>
+              {tipo === 'reserva' && (
+                <div>
+                  <label style={labelStyle}>Consumir da Entrada</label>
+                  <select value={origemLancamentoId} onChange={(e) => setOrigemLancamentoId(e.target.value)} style={{ ...inputStyle, background: 'white', cursor: 'pointer' }}>
+                    <option value="">Nenhuma / Selecionar...</option>
+                    {entradasList.map((en) => (
+                      <option key={en.id} value={en.id}>{`${en.descricao || 'Entrada'} · ${en.data_ocorrencia ? new Date(en.data_ocorrencia).toLocaleDateString('pt-BR') : ''} · ${formatBRL(en.valor_centavos)}`}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             <button
               type="submit"

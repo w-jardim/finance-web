@@ -5,7 +5,6 @@ import { Dashboard } from './pages/Dashboard';
 import { Lancamentos } from './pages/Lancamentos';
 import { Contas } from './pages/Contas';
 import { Categorias } from './pages/Categorias';
-import { Reservas } from './pages/Reservas';
 import { Layout } from './components/Layout';
 import { NotFound } from './pages/NotFound';
 
@@ -50,10 +49,7 @@ export const router = createBrowserRouter([
             path: 'categorias',
             element: <Categorias />,
           },
-          {
-            path: 'reservas',
-            element: <Reservas />,
-          },
+          
         ],
       },
       {
