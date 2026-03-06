@@ -6,7 +6,6 @@ import { api } from "../api/api";
 const TIPO_OPTIONS = [
   { value: "entrada", label: "↗️ Entrada", color: "#11998e" },
   { value: "saida", label: "↘️ Saída", color: "#ff6b6b" },
-  { value: "reserva", label: "🏦 Reserva", color: "#d69e2e" },
 ];
 
 const TIPO_CONFIG = {
