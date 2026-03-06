@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { to: '/lancamentos', icon: '📋', label: 'Lançamentos' },
   { to: '/contas', icon: '🏦', label: 'Contas' },
   { to: '/categorias', icon: '🏷️', label: 'Categorias' },
+  { to: '/reservas', icon: '🎯', label: 'Reservas' },
 ];
 
 export function Layout() {

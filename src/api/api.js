@@ -121,4 +121,23 @@ export const api = {
 
   deleteCategoria: (token, id) =>
     request(`/categorias/${id}`, { method: "DELETE", token }),
+
+  // Reservas
+  getReservas: (token, { status, inicio, fim } = {}) => {
+    const qs = new URLSearchParams();
+    if (status) qs.set("status", status);
+    if (inicio) qs.set("inicio", inicio);
+    if (fim) qs.set("fim", fim);
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return request(`/reservas${suffix}`, { method: "GET", token });
+  },
+
+  createReserva: (token, data) =>
+    request("/reservas", { method: "POST", token, body: data }),
+
+  updateReserva: (token, id, data) =>
+    request(`/reservas/${id}`, { method: "PUT", token, body: data }),
+
+  deleteReserva: (token, id) =>
+    request(`/reservas/${id}`, { method: "DELETE", token }),
 };
