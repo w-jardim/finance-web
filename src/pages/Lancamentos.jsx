@@ -119,9 +119,11 @@ export function Lancamentos() {
   const resumo = lancamentos.reduce(
     (acc, l) => {
       const v = l.valor_centavos ?? 0;
-      if (l.tipo === "entrada") acc.entradas += v;
-      else if (l.tipo === "reserva") acc.reservas += v;
-      else acc.saidas += v;
+      if (l.tipo === "entrada") {
+        if (l.recebido) acc.entradas += v;
+      } else if (l.tipo === "reserva") {
+        if (l.separado) acc.reservas += v;
+      } else acc.saidas += v;
       return acc;
     },
     { entradas: 0, saidas: 0, reservas: 0 }
@@ -545,21 +547,57 @@ export function Lancamentos() {
                               🗑️
                             </button>
                             {/* Pagar / Estornar */}
-                            {l.pago ? (
+                            {l.tipo === 'saida' && (
+                              (l.pago ? (
+                                <button onClick={async () => {
+                                  try { await api.unpayLancamento(token, l.id); await fetchLancamentos(); }
+                                  catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao estornar.'); }
+                                }} title="Estornar" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                                  💸 Estornado
+                                </button>
+                              ) : (
+                                <button onClick={async () => {
+                                  try { await api.payLancamento(token, l.id); await fetchLancamentos(); }
+                                  catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao marcar pago.'); }
+                                }} title="Marcar pago" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                                  ✅ Marcar Pago
+                                </button>
+                              ))
+                            )}
+
+                            {/* Recebido / Cancelar Recebimento (aplica-se a entradas) */}
+                            {l.tipo === 'entrada' && (l.recebido ? (
                               <button onClick={async () => {
-                                try { await api.unpayLancamento(token, l.id); await fetchLancamentos(); }
-                                catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao estornar.'); }
-                              }} title="Estornar" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
-                                💸 Estornado
+                                try { await api.unreceiveLancamento(token, l.id); await fetchLancamentos(); }
+                                catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao cancelar recebido.'); }
+                              }} title="Cancelar recebido" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                                📥 Recebido
                               </button>
                             ) : (
                               <button onClick={async () => {
-                                try { await api.payLancamento(token, l.id); await fetchLancamentos(); }
-                                catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao marcar pago.'); }
-                              }} title="Marcar pago" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
-                                ✅ Marcar Pago
+                                try { await api.receiveLancamento(token, l.id); await fetchLancamentos(); }
+                                catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao marcar recebido.'); }
+                              }} title="Marcar recebido" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                                📥 Marcar Recebido
                               </button>
-                            )}
+                            ))}
+
+                            {/* Separado / Desseparar (aplica-se a reservas) */}
+                            {l.tipo === 'reserva' && (l.separado ? (
+                              <button onClick={async () => {
+                                try { await api.unseparateLancamento(token, l.id); await fetchLancamentos(); }
+                                catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao desseparar.'); }
+                              }} title="Desseparar" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                                🧾 Separado
+                              </button>
+                            ) : (
+                              <button onClick={async () => {
+                                try { await api.separateLancamento(token, l.id); await fetchLancamentos(); }
+                                catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao marcar separado.'); }
+                              }} title="Marcar separado" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                                🧾 Marcar Separado
+                              </button>
+                            ))}
                           </div>
                         )}
                       </td>
@@ -632,7 +670,7 @@ export function Lancamentos() {
                           onMouseOut={(e) => { e.currentTarget.style.background = '#edf2f7'; e.currentTarget.style.color = '#4a5568'; }}>
                           🗑️
                         </button>
-                          {l.pago ? (
+                          {l.tipo === 'saida' && (l.pago ? (
                             <button onClick={async () => {
                               try { await api.unpayLancamento(token, l.id); await fetchLancamentos(); }
                               catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao estornar.'); }
@@ -646,7 +684,37 @@ export function Lancamentos() {
                             }} title="Marcar pago" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
                               ✅ Marcar Pago
                             </button>
-                          )}
+                          ))}
+                          {l.tipo === 'entrada' && (l.recebido ? (
+                            <button onClick={async () => {
+                              try { await api.unreceiveLancamento(token, l.id); await fetchLancamentos(); }
+                              catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao cancelar recebido.'); }
+                            }} title="Cancelar recebido" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                              📥 Recebido
+                            </button>
+                          ) : (
+                            <button onClick={async () => {
+                              try { await api.receiveLancamento(token, l.id); await fetchLancamentos(); }
+                              catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao marcar recebido.'); }
+                            }} title="Marcar recebido" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                              📥 Marcar Recebido
+                            </button>
+                          ))}
+                          {l.tipo === 'reserva' && (l.separado ? (
+                            <button onClick={async () => {
+                              try { await api.unseparateLancamento(token, l.id); await fetchLancamentos(); }
+                              catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao desseparar.'); }
+                            }} title="Desseparar" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                              🧾 Separado
+                            </button>
+                          ) : (
+                            <button onClick={async () => {
+                              try { await api.separateLancamento(token, l.id); await fetchLancamentos(); }
+                              catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao marcar separado.'); }
+                            }} title="Marcar separado" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                              🧾 Marcar Separado
+                            </button>
+                          ))}
                       </div>
                     )}
                   </div>

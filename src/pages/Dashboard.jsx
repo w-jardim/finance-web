@@ -69,9 +69,11 @@ export function Dashboard() {
 
     for (const l of lancamentos) {
       const valor = Number(l.valor_centavos || 0);
-      if (l.tipo === "entrada") entradas += valor;
-      else if (l.tipo === "reserva") reservas += valor;
-      else if (l.tipo === "saida") saidas += valor;
+      if (l.tipo === "entrada") {
+        if (l.recebido) entradas += valor;
+      } else if (l.tipo === "reserva") {
+        if (l.separado) reservas += valor;
+      } else if (l.tipo === "saida") saidas += valor;
       // contabiliza pagamentos para despesas/reservas
       if (l.tipo !== 'entrada') {
         if (l.pago) pagas += valor;

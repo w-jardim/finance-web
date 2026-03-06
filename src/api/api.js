@@ -67,12 +67,14 @@ export const api = {
   health: () => request("/health", { method: "GET" }),
 
   // Recursos (você vai usar no Dashboard depois)
-  getLancamentos: (token, { inicio, fim, tipo, pago } = {}) => {
+  getLancamentos: (token, { inicio, fim, tipo, pago, recebido, separado } = {}) => {
     const qs = new URLSearchParams();
     if (inicio) qs.set("inicio", inicio);
     if (fim) qs.set("fim", fim);
     if (tipo) qs.set("tipo", tipo);
     if (typeof pago !== 'undefined') qs.set('pago', String(pago));
+    if (typeof recebido !== 'undefined') qs.set('recebido', String(recebido));
+    if (typeof separado !== 'undefined') qs.set('separado', String(separado));
 
     const suffix = qs.toString() ? `?${qs.toString()}` : "";
     return request(`/lancamentos${suffix}`, { method: "GET", token });
@@ -129,4 +131,10 @@ export const api = {
   // marcar pago / estornar
   payLancamento: (token, id) => request(`/lancamentos/${id}/pagar`, { method: 'PATCH', token }),
   unpayLancamento: (token, id) => request(`/lancamentos/${id}/estornar`, { method: 'PATCH', token }),
+  // marcar recebido / cancelar
+  receiveLancamento: (token, id) => request(`/lancamentos/${id}/receber`, { method: 'PATCH', token }),
+  unreceiveLancamento: (token, id) => request(`/lancamentos/${id}/cancelar-recebimento`, { method: 'PATCH', token }),
+  // marcar separado / desseparar
+  separateLancamento: (token, id) => request(`/lancamentos/${id}/separar`, { method: 'PATCH', token }),
+  unseparateLancamento: (token, id) => request(`/lancamentos/${id}/desseparar`, { method: 'PATCH', token }),
 };
