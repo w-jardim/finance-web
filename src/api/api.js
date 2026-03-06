@@ -67,11 +67,12 @@ export const api = {
   health: () => request("/health", { method: "GET" }),
 
   // Recursos (você vai usar no Dashboard depois)
-  getLancamentos: (token, { inicio, fim, tipo } = {}) => {
+  getLancamentos: (token, { inicio, fim, tipo, pago } = {}) => {
     const qs = new URLSearchParams();
     if (inicio) qs.set("inicio", inicio);
     if (fim) qs.set("fim", fim);
     if (tipo) qs.set("tipo", tipo);
+    if (typeof pago !== 'undefined') qs.set('pago', String(pago));
 
     const suffix = qs.toString() ? `?${qs.toString()}` : "";
     return request(`/lancamentos${suffix}`, { method: "GET", token });
@@ -124,4 +125,8 @@ export const api = {
     request(`/categorias/${id}`, { method: "DELETE", token }),
   deleteCategoria: (token, id) =>
     request(`/categorias/${id}`, { method: "DELETE", token }),
+  
+  // marcar pago / estornar
+  payLancamento: (token, id) => request(`/lancamentos/${id}/pagar`, { method: 'PATCH', token }),
+  unpayLancamento: (token, id) => request(`/lancamentos/${id}/estornar`, { method: 'PATCH', token }),
 };

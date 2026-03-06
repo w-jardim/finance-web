@@ -29,6 +29,7 @@ export function Lancamentos() {
   // Filters
   const [filtroInicio, setFiltroInicio] = useState(firstOfMonth());
   const [filtroFim, setFiltroFim] = useState(today());
+  const [filtroPago, setFiltroPago] = useState('all'); // all | paid | unpaid
 
   // Form state
   const [showForm, setShowForm] = useState(false);
@@ -64,6 +65,7 @@ export function Lancamentos() {
       const params = {};
       if (filtroInicio) params.inicio = filtroInicio;
       if (filtroFim) params.fim = filtroFim;
+      if (filtroPago && filtroPago !== 'all') params.pago = filtroPago === 'paid' ? true : false;
       const resp = await api.getLancamentos(token, params);
       const list = Array.isArray(resp) ? resp : resp?.lancamentos ?? [];
       setLancamentos(list);
@@ -435,6 +437,14 @@ export function Lancamentos() {
           <input type="date" value={filtroFim} onChange={(e) => setFiltroFim(e.target.value)} style={{ ...inputStyle, width: '160px' }}
             onFocus={handleFocus} onBlur={handleBlur} />
         </div>
+        <div>
+          <label style={labelStyle}>Pagamento</label>
+          <select value={filtroPago} onChange={(e) => setFiltroPago(e.target.value)} style={{ ...inputStyle, width: '160px' }}>
+            <option value="all">Todos</option>
+            <option value="paid">Pagos</option>
+            <option value="unpaid">A pagar</option>
+          </select>
+        </div>
       </div>
 
       {/* Resume Mini Cards */}
@@ -534,6 +544,22 @@ export function Lancamentos() {
                               onMouseOut={(e) => { e.currentTarget.style.background = '#edf2f7'; e.currentTarget.style.color = '#4a5568'; }}>
                               🗑️
                             </button>
+                            {/* Pagar / Estornar */}
+                            {l.pago ? (
+                              <button onClick={async () => {
+                                try { await api.unpayLancamento(token, l.id); await fetchLancamentos(); }
+                                catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao estornar.'); }
+                              }} title="Estornar" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                                💸 Estornado
+                              </button>
+                            ) : (
+                              <button onClick={async () => {
+                                try { await api.payLancamento(token, l.id); await fetchLancamentos(); }
+                                catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao marcar pago.'); }
+                              }} title="Marcar pago" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                                ✅ Marcar Pago
+                              </button>
+                            )}
                           </div>
                         )}
                       </td>
@@ -582,7 +608,7 @@ export function Lancamentos() {
                     }}>
                       {l.tipo === 'entrada' ? '+' : l.tipo === 'reserva' ? '⇥' : '−'} {formatBRL(l.valor_centavos)}
                     </div>
-                    {deletingId === l.id ? (
+                          {deletingId === l.id ? (
                       <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                         <span style={{ fontSize: '0.8rem', color: '#c53030', fontWeight: '600' }}>Excluir?</span>
                         <button onClick={() => handleDelete(l.id)} disabled={deleteLoading}
@@ -606,6 +632,21 @@ export function Lancamentos() {
                           onMouseOut={(e) => { e.currentTarget.style.background = '#edf2f7'; e.currentTarget.style.color = '#4a5568'; }}>
                           🗑️
                         </button>
+                          {l.pago ? (
+                            <button onClick={async () => {
+                              try { await api.unpayLancamento(token, l.id); await fetchLancamentos(); }
+                              catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao estornar.'); }
+                            }} title="Estornar" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                              💸 Estornado
+                            </button>
+                          ) : (
+                            <button onClick={async () => {
+                              try { await api.payLancamento(token, l.id); await fetchLancamentos(); }
+                              catch (err) { if (err?.status === 401) { logout(); } else setError('Falha ao marcar pago.'); }
+                            }} title="Marcar pago" style={{ ...actionBtnStyle, background: '#edf2f7' }}>
+                              ✅ Marcar Pago
+                            </button>
+                          )}
                       </div>
                     )}
                   </div>

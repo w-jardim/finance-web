@@ -64,16 +64,23 @@ export function Dashboard() {
     let entradas = 0;
     let saidas = 0;
     let reservas = 0;
+    let pagas = 0;
+    let aPagar = 0;
 
     for (const l of lancamentos) {
       const valor = Number(l.valor_centavos || 0);
       if (l.tipo === "entrada") entradas += valor;
       else if (l.tipo === "reserva") reservas += valor;
       else if (l.tipo === "saida") saidas += valor;
+      // contabiliza pagamentos para despesas/reservas
+      if (l.tipo !== 'entrada') {
+        if (l.pago) pagas += valor;
+        else aPagar += valor;
+      }
     }
 
     const saldo = entradas - saidas - reservas;
-    return { entradas, saidas, reservas, saldo };
+    return { entradas, saidas, reservas, saldo, pagas, aPagar };
   }, [lancamentos]);
 
   if (loading) {
@@ -385,6 +392,77 @@ export function Dashboard() {
             letterSpacing: '-0.02em'
           }}>
             {formatBRLFromCentavos(resumo.reservas)}
+          </div>
+        </div>
+        {/* Pagas Card */}
+        <div style={{
+          background: 'linear-gradient(135deg, #48bb78 0%, #2f855a 100%)',
+          borderRadius: '16px',
+          padding: '1.5rem',
+          boxShadow: '0 8px 24px rgba(72, 187, 120, 0.25)',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '-20px',
+            right: '-20px',
+            fontSize: '6rem',
+            opacity: 0.12
+          }}>✅</div>
+          <div style={{
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            opacity: 0.9,
+            marginBottom: '0.5rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em'
+          }}>
+            Pagas
+          </div>
+          <div style={{
+            fontSize: 'clamp(1.75rem, 5vw, 2.25rem)',
+            fontWeight: '800',
+            letterSpacing: '-0.02em'
+          }}>
+            {formatBRLFromCentavos(resumo.pagas)}
+          </div>
+        </div>
+
+        {/* A Pagar Card */}
+        <div style={{
+          background: 'linear-gradient(135deg, #f6ad55 0%, #dd6b20 100%)',
+          borderRadius: '16px',
+          padding: '1.5rem',
+          boxShadow: '0 8px 24px rgba(246, 173, 85, 0.25)',
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '-20px',
+            right: '-20px',
+            fontSize: '6rem',
+            opacity: 0.12
+          }}>⏳</div>
+          <div style={{
+            fontSize: '0.875rem',
+            fontWeight: '600',
+            opacity: 0.9,
+            marginBottom: '0.5rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em'
+          }}>
+            A Pagar
+          </div>
+          <div style={{
+            fontSize: 'clamp(1.75rem, 5vw, 2.25rem)',
+            fontWeight: '800',
+            letterSpacing: '-0.02em'
+          }}>
+            {formatBRLFromCentavos(resumo.aPagar)}
           </div>
         </div>
       </section>
