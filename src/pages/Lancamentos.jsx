@@ -49,7 +49,10 @@ export function Lancamentos() {
   const [deletingId, setDeletingId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const categoriasFiltradas = categorias.filter((c) => c.tipo === tipo);
+  // Reserva usa categorias de saída (dinheiro alocado)
+  const categoriasFiltradas = categorias.filter((c) =>
+    tipo === "reserva" ? c.tipo === "saida" : c.tipo === tipo
+  );
 
   /* ------------- FETCHERS ------------- */
   const fetchLancamentos = useCallback(async () => {
