@@ -51,9 +51,9 @@ export function Lancamentos() {
   const [deletingId, setDeletingId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Reserva usa categorias de saída (dinheiro alocado)
+  // Reserva pode usar categorias de 'saida' ou categorias específicas de 'reserva'
   const categoriasFiltradas = categorias.filter((c) =>
-    tipo === "reserva" ? c.tipo === "saida" : c.tipo === tipo
+    tipo === "reserva" ? (c.tipo === "saida" || c.tipo === "reserva") : c.tipo === tipo
   );
 
   /* ------------- FETCHERS ------------- */
